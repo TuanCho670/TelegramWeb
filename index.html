@@ -1,90 +1,100 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Web App Demo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/telegram-web-app/6.7.0/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Telegram WebApp Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/telegram-web-app/7.0.0/telegram-web-app.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: var(--tg-theme-bg-color, #ffffff);
+            padding: 16px;
             color: var(--tg-theme-text-color, #000000);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
         }
 
         .button {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: var(--tg-theme-button-color, #3390ec);
+            background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
             border-radius: 8px;
-            font-size: 16px;
-            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 14px;
             cursor: pointer;
+            width: 100%;
+            margin: 8px 0;
         }
 
-        .user-info {
-            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 15px;
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
             border-radius: 8px;
-            margin: 10px 0;
+            padding: 16px;
+            margin: 8px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Chào mừng đến với Web App</h1>
+    <div id="main">
+        <div class="card">
+            <h3>Thông tin người dùng</h3>
+            <div id="usercard">Đang tải...</div>
         </div>
 
-        <div class="user-info">
-            <h2>Thông tin người dùng</h2>
-            <p id="userData">Đang tải...</p>
-        </div>
-
-        <button class="button" id="mainButton">Gửi tin nhắn</button>
-        <button class="button" id="closeApp">Đóng ứng dụng</button>
+        <button class="button" onclick="sendMessage()">Gửi tin nhắn test</button>
+        <button class="button" onclick="showAlert()">Hiển thị thông báo</button>
+        <button class="button" onclick="requestLocation()">Yêu cầu vị trí</button>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand();
 
-        // Hiển thị thông tin người dùng
-        let userDataElement = document.getElementById('userData');
-        if (tg.initDataUnsafe?.user) {
-            const user = tg.initDataUnsafe.user;
-            userDataElement.innerHTML = `
-                Tên: ${user.first_name}<br>
-                ID: ${user.id}<br>
-                ${user.username ? 'Username: @' + user.username : ''}
-            `;
-        } else {
-            userDataElement.innerHTML = 'Không thể lấy thông tin người dùng';
-        }
+        tg.ready(); // Thông báo app đã sẵn sàng
+        tg.expand(); // Mở rộng giao diện
 
-        // Nút gửi tin nhắn
-        document.getElementById('mainButton').addEventListener('click', () => {
-            tg.sendData('Xin chào từ Web App!');
+        // Khởi tạo MainButton
+        tg.MainButton.setText('Hoàn thành');
+        tg.MainButton.show();
+        tg.MainButton.onClick(function(){ 
+            tg.sendData("Dữ liệu từ Web App");
+            tg.close();
         });
 
-        // Nút đóng ứng dụng
-        document.getElementById('closeApp').addEventListener('click', () => {
-            tg.close();
+        // Hiển thị thông tin người dùng
+        let usercard = document.getElementById("usercard");
+        if (tg.initDataUnsafe.user) {
+            usercard.innerHTML = `
+                Tên: ${tg.initDataUnsafe.user.first_name}<br>
+                ID: ${tg.initDataUnsafe.user.id}<br>
+                ${tg.initDataUnsafe.user.username ? 'Username: @' + tg.initDataUnsafe.user.username : ''}
+            `;
+        }
+
+        function sendMessage() {
+            if (tg.initDataUnsafe.user) {
+                tg.sendData("Xin chào từ Web App!");
+            }
+        }
+
+        function showAlert() {
+            tg.showAlert("Đây là thông báo test!");
+        }
+
+        function requestLocation() {
+            tg.requestLocation(function(location) {
+                if (location) {
+                    tg.showAlert(`Vị trí: ${location.latitude}, ${location.longitude}`);
+                }
+            });
+        }
+
+        // Thêm sự kiện chủ đề thay đổi
+        Telegram.WebApp.onEvent('themeChanged', function() {
+            document.documentElement.style.setProperty('--tg-theme-bg-color', Telegram.WebApp.backgroundColor);
+            document.documentElement.style.setProperty('--tg-theme-text-color', Telegram.WebApp.textColor);
+            document.documentElement.style.setProperty('--tg-theme-button-color', Telegram.WebApp.buttonColor);
+            document.documentElement.style.setProperty('--tg-theme-button-text-color', Telegram.WebApp.buttonTextColor);
         });
     </script>
 </body>
