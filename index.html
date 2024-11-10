@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Telegram WebApp Demo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/telegram-web-app/7.0.0/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -42,59 +41,67 @@
             <div id="usercard">Đang tải...</div>
         </div>
 
-        <button class="button" onclick="sendMessage()">Gửi tin nhắn test</button>
-        <button class="button" onclick="showAlert()">Hiển thị thông báo</button>
-        <button class="button" onclick="requestLocation()">Yêu cầu vị trí</button>
+        <button class="button" id="btnAlert">Hiển thị thông báo</button>
+        <button class="button" id="btnBack">Quay lại</button>
+        <button class="button" id="btnClose">Đóng Web App</button>
+        <button class="button" id="btnMainButton">Hiện nút chính</button>
     </div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
+    <script type="text/javascript">
+        // Đảm bảo rằng Telegram WebApp đã được khởi tạo
+        const webapp = window.Telegram.WebApp;
 
-        tg.ready(); // Thông báo app đã sẵn sàng
-        tg.expand(); // Mở rộng giao diện
-
-        // Khởi tạo MainButton
-        tg.MainButton.setText('Hoàn thành');
-        tg.MainButton.show();
-        tg.MainButton.onClick(function(){ 
-            tg.sendData("Dữ liệu từ Web App");
-            tg.close();
-        });
+        webapp.ready();
+        webapp.expand();
 
         // Hiển thị thông tin người dùng
-        let usercard = document.getElementById("usercard");
-        if (tg.initDataUnsafe.user) {
+        const usercard = document.getElementById("usercard");
+        if (webapp.initDataUnsafe.user) {
             usercard.innerHTML = `
-                Tên: ${tg.initDataUnsafe.user.first_name}<br>
-                ID: ${tg.initDataUnsafe.user.id}<br>
-                ${tg.initDataUnsafe.user.username ? 'Username: @' + tg.initDataUnsafe.user.username : ''}
+                Tên: ${webapp.initDataUnsafe.user.first_name}<br>
+                ID: ${webapp.initDataUnsafe.user.id}<br>
+                ${webapp.initDataUnsafe.user.username ? 'Username: @' + webapp.initDataUnsafe.user.username : ''}
             `;
         }
 
-        function sendMessage() {
-            if (tg.initDataUnsafe.user) {
-                tg.sendData("Xin chào từ Web App!");
-            }
-        }
-
-        function showAlert() {
-            tg.showAlert("Đây là thông báo test!");
-        }
-
-        function requestLocation() {
-            tg.requestLocation(function(location) {
-                if (location) {
-                    tg.showAlert(`Vị trí: ${location.latitude}, ${location.longitude}`);
-                }
+        // Thiết lập các nút
+        document.getElementById('btnAlert').addEventListener('click', function() {
+            webapp.showPopup({
+                title: 'Thông báo',
+                message: 'Đây là thông báo test',
+                buttons: [{type: 'ok'}]
             });
-        }
+        });
 
-        // Thêm sự kiện chủ đề thay đổi
-        Telegram.WebApp.onEvent('themeChanged', function() {
-            document.documentElement.style.setProperty('--tg-theme-bg-color', Telegram.WebApp.backgroundColor);
-            document.documentElement.style.setProperty('--tg-theme-text-color', Telegram.WebApp.textColor);
-            document.documentElement.style.setProperty('--tg-theme-button-color', Telegram.WebApp.buttonColor);
-            document.documentElement.style.setProperty('--tg-theme-button-text-color', Telegram.WebApp.buttonTextColor);
+        document.getElementById('btnBack').addEventListener('click', function() {
+            webapp.BackButton.show();
+        });
+
+        document.getElementById('btnClose').addEventListener('click', function() {
+            webapp.close();
+        });
+
+        document.getElementById('btnMainButton').addEventListener('click', function() {
+            webapp.MainButton.setText("Nút chính");
+            webapp.MainButton.show();
+            webapp.MainButton.onClick(function() {
+                webapp.showPopup({
+                    title: 'Main Button',
+                    message: 'Bạn đã nhấn nút chính!',
+                    buttons: [{type: 'ok'}]
+                });
+            });
+        });
+
+        // Xử lý sự kiện theme thay đổi
+        webapp.onEvent('themeChanged', function() {
+            document.body.style.backgroundColor = webapp.backgroundColor;
+            document.body.style.color = webapp.textColor;
+        });
+
+        // Xử lý khi webapp được mở
+        webapp.onEvent('viewportChanged', function() {
+            // Có thể thêm xử lý khi kích thước viewport thay đổi
         });
     </script>
 </body>
