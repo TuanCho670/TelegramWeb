@@ -1,108 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Telegram WebApp Demo</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Telegram WebApp openLink</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 16px;
-            color: var(--tg-theme-text-color, #000000);
-            background:#834545;
+            padding: 20px;
+            text-align: center;
         }
-
         .button {
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background-color: #0088cc;
+            color: white;
             border: none;
+            padding: 15px 25px;
+            font-size: 16px;
             border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 14px;
             cursor: pointer;
-            width: 100%;
-            margin: 8px 0;
+            margin: 10px;
         }
-
-        .card {
-            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .coin-loader-wrapper {
+            text-align: center;
+        }
+        .coin-loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #0088cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        .loading-text {
+            color: white;
+            font-size: 18px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .redirect-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+        }
+        .redirect-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .manual-link {
+            display: inline-block;
+            background-color: #0088cc;
+            color: white;
+            padding: 12px 20px;
             border-radius: 8px;
-            padding: 16px;
-            margin: 8px 0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .log-container {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
-    <div id="main">
-        <div class="card">
-            <h3>Thông tin người dùng</h3>
-            <div id="usercard">Đang tải...</div>
-        </div>
-
-        <button class="button" id="btnAlert">Hiển thị thông báo</button>
-        <button class="button" id="btnBack">Quay lại</button>
-        <button class="button" id="btnClose">Đóng Web App</button>
-        <button class="button" id="btnMainButton">Hiện Nút Tùy Chỉnh</button>
+    <h1>Test Telegram WebApp openLink</h1>
+    <p>Nhấn nút bên dưới để test chức năng chuyển hướng</p>
+    
+    <button class="button" onclick="testOpenLink('desktop')">Test Desktop Mode</button>
+    <button class="button" onclick="testOpenLink('mobile')">Test Mobile Mode</button>
+    
+    <div id="logContainer" class="log-container">
+        <p>Logs sẽ hiển thị ở đây...</p>
     </div>
 
-    <script type="text/javascript">
-        // Đảm bảo rằng Telegram WebApp đã được khởi tạo
-        const webapp = window.Telegram.WebApp;
-
-        webapp.ready();
-        webapp.expand();
-
-        // Hiển thị thông tin người dùng
-        const usercard = document.getElementById("usercard");
-        if (webapp.initDataUnsafe.user) {
-            usercard.innerHTML = `
-                Tên: ${webapp.initDataUnsafe.user.first_name}<br>
-                ID: ${webapp.initDataUnsafe.user.id}<br>
-                ${webapp.initDataUnsafe.user.username ? 'Username: @' + webapp.initDataUnsafe.user.username : ''}
-            `;
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // Log function
+        function log(message) {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('p');
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
         }
-
-        // Thiết lập các nút
-        document.getElementById('btnAlert').addEventListener('click', function() {
-            webapp.showPopup({
-                title: 'Thông báo',
-                message: 'Đây là thông báo test',
-                buttons: [{type: 'ok'}]
-            });
-        });
-
-        document.getElementById('btnBack').addEventListener('click', function() {
-            webapp.BackButton.show();
-        });
-
-        document.getElementById('btnClose').addEventListener('click', function() {
-            webapp.close();
-        });
-
-        document.getElementById('btnMainButton').addEventListener('click', function() {
-            webapp.MainButton.setText("Nút chính");
-            webapp.MainButton.show();
-            webapp.MainButton.onClick(function() {
-                webapp.showPopup({
-                    title: 'Main Button',
-                    message: 'Bạn đã nhấn nút chính!',
-                    buttons: [{type: 'ok'}]
-                });
-            });
-        });
-
-        // Xử lý sự kiện theme thay đổi
-        webapp.onEvent('themeChanged', function() {
-            document.body.style.backgroundColor = webapp.backgroundColor;
-            document.body.style.color = webapp.textColor;
-        });
-
-        // Xử lý khi webapp được mở
-        webapp.onEvent('viewportChanged', function() {
-            // Có thể thêm xử lý khi kích thước viewport thay đổi
-        });
+        
+        // Mock getAppLink function
+        function getAppLink() {
+            return 'https://example.com/app';
+        }
+        
+        // Test function
+        function testOpenLink(mode) {
+            log(`Starting testOpenLink in ${mode} mode...`);
+            
+            // Show loader
+            const loader = document.createElement('div');
+            loader.className = 'loader-container';
+            loader.innerHTML = `
+                <div class="coin-loader-wrapper">
+                    <div class="coin-loader"></div>
+                    <div class="loading-text">Đang xử lý...</div>
+                </div>
+            `;
+            document.body.appendChild(loader);
+            
+            // Get link
+            const appLink = getAppLink();
+            log(`App link: ${appLink}`);
+            
+            // Simulate processing delay
+            setTimeout(() => {
+                // Remove loader
+                document.body.removeChild(loader);
+                log('Processing complete, loader removed');
+                
+                // Open link
+                if (window.Telegram?.WebApp) {
+                    log('Telegram WebApp detected');
+                    try {
+                        log('Calling WebApp.ready()...');
+                        window.Telegram.WebApp.ready();
+                        
+                        if (mode === 'mobile') {
+                            log('Using mobile redirect method');
+                            
+                            // Create redirect page
+                            const redirectPage = document.createElement('div');
+                            redirectPage.className = 'redirect-page';
+                            redirectPage.innerHTML = `
+                                <div class="redirect-text">Đang chuyển hướng tới trang tải app...</div>
+                                <a id="manualRedirectBtn" href="${appLink}" class="manual-link">
+                                    Nhấn vào đây nếu không tự chuyển hướng
+                                </a>
+                            `;
+                            document.body.appendChild(redirectPage);
+                            
+                            // Try WebApp.openLink first
+                            try {
+                                log('Calling WebApp.openLink()...');
+                                window.Telegram.WebApp.openLink(appLink);
+                            } catch (e) {
+                                log(`Error with WebApp.openLink: ${e.message}`);
+                                // Auto-click the manual button after delay
+                                setTimeout(() => {
+                                    log('Auto-clicking manual redirect button');
+                                    document.getElementById('manualRedirectBtn').click();
+                                }, 1000);
+                            }
+                            
+                            // Auto-remove redirect page after 5 seconds
+                            setTimeout(() => {
+                                if (redirectPage.parentNode) {
+                                    document.body.removeChild(redirectPage);
+                                    log('Redirect page auto-removed');
+                                }
+                            }, 5000);
+                        } else {
+                            // Desktop mode
+                            log('Using desktop redirect method');
+                            log('Calling WebApp.openLink()...');
+                            window.Telegram.WebApp.openLink(appLink);
+                        }
+                    } catch (err) {
+                        log(`Error in Telegram WebApp: ${err.message}`);
+                        // Fallback method
+                        log('Fallback: Using window.location.href');
+                        // window.location.href = appLink; // Commented out to prevent actual redirect
+                    }
+                } else {
+                    log('Telegram WebApp not detected');
+                    log('Using window.location.href');
+                    // window.location.href = appLink; // Commented out to prevent actual redirect
+                }
+            }, 2000); // 2 second processing delay
+        }
     </script>
 </body>
 </html>
